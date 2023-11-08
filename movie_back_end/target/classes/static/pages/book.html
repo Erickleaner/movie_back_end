@@ -1,0 +1,234 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>SpringMVC案例</title>
+    <link rel="stylesheet" href="../css/element-ui@2.15.14.css">
+    <script src="../js/axios.min.js"></script>
+    <script src="../js/vue@2.6.12.js"></script>
+    <script src="../js/element-ui@2.15.14.js"></script>
+</head>
+
+
+<body class="hold-transition">
+    <div id="app">
+        <div class="content-header">
+            <h1>图书管理</h1>
+        </div>
+        <div class="app-container">
+            <div class="box">
+                <div class="filter-container">
+                    <el-input placeholder="图书名称"></el-input>
+                    <el-button @click="getAll()">查询</el-button>
+                    <el-button type="primary" @click="handleCreate()">新建</el-button>
+                </div>
+                <el-table size="small" current-row-key="id" :data="dataList" stripe highlight-current-row>
+                    <el-table-column type="index" align="center" label="序号"></el-table-column>
+                    <el-table-column prop="name" align="center" label="图书名称"></el-table-column>
+                    <el-table-column prop="description" align="center" label="图书描述"></el-table-column>
+                    <el-table-column label="操作" align="center">
+                        <template slot-scope="scope">
+                            <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">编辑</el-button>
+                            <el-button type="danger" size="mini" @click="handleDelete(scope.row)">删除</el-button>
+                        </template>
+                    </el-table-column>
+                </el-table>
+
+                <!--新增标签弹层-->
+                <div class="add-form">
+                    <el-dialog title="新增图书" :visible.sync="dialogFormVisible">
+                        <el-form ref="dataAddForm" :model="formData" :rules="rules" label-position="right" >
+                            <el-row>
+                                <el-col :span="12">
+                                    <el-form-item label="图书名称">
+                                        <el-input v-model="formData.name"></el-input>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
+                            <el-row>
+                                <el-col :span="24">
+                                    <el-form-item label="图书描述">
+                                        <el-input type="textarea" v-model="formData.description"></el-input>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
+                        </el-form>
+                        <div slot="footer" class="dialog-footer">
+                            <el-button @click="dialogFormVisible = false">取消</el-button>
+                            <el-button type="primary" @click="handleAdd">确定</el-button>
+                        </div>
+                    </el-dialog>
+                </div>
+
+                <!--编辑标签弹层-->
+                <div class="add-form">
+                    <el-dialog title="编辑检查项" :visible.sync="dialogFromVisible4Edit">
+                        <el-form ref="dataEditForm" :model="formData" :rules="rules" label-position="right">
+                            <el-row>
+                                <el-col :span="12">
+                                    <el-form-item label="图书名称">
+                                        <el-input v-model="formData.name"></el-input>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
+                            <el-row>
+                                <el-col :span="24">
+                                    <el-form-item label="图书描述">
+                                        <el-input type="textarea" v-model="formData.description"></el-input>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
+                        </el-form>
+                        <div slot="footer" class="dialog-footer">
+                            <el-button @click="dialogFromVisible4Edit = false">取消</el-button>
+                            <el-button type="primary" @click="handleEdit">确定</el-button>
+                        </div>
+                    </el-dialog>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    //axios
+    const service = axios.create({
+        baseURL: 'localhost:8080/', // api的base_url
+        timeout: 5000 // 请求超时时间
+    })
+
+    //拦截这个请求
+
+    const getToken = () =>{
+        //从store中取出token
+        return 'token'
+    }
+
+    //请求被 then 或 catch 处理前拦截它
+    service.interceptors.request.use(config => {
+        // Do something before request is sent
+        const token = getToken()
+        if (token) {
+            config.headers['X-Token'] = getToken() // 让每个请求携带token--['X-Token']为自定义key 请根据实际情况自行修改
+        }
+        return config
+    }, error => {
+        // Do something with request error
+        console.log(error) // for debug
+        Promise.reject(error)
+    })
+
+    //热更新模块..
+    const testRequest = () => {
+        service.request({
+            method:'get',
+            url:'/book'
+        }).then((res)=>{
+            console.log(res.data.data)
+        })
+    }
+
+
+
+</script>
+<script>
+    //Vue
+    new Vue({
+        el: '#app',
+        data() {
+            return{
+                pagination: {},
+                dataList:[],
+                formData:{},
+                dialogFormVisible:false,
+                dialogFromVisible4Edit:false,
+                rules:{
+                    name:[{required:true,messages:'图书名称为必填项',trigger:'blur'}],
+                    description:[{required:true,messages:'图书描述为必填项',trigger:'blur'}]
+                }
+            }
+        },
+        created(){
+            this.getAll()
+        },
+        methods:{
+            getAll(){
+                axios.get('/book').then(res=>{
+                    this.dataList = res.data.data
+                })
+            },
+            resetForm(){
+                this.formData = {}
+            },
+            handleCreate(){
+                this.dialogFormVisible = true
+                this.resetForm()
+            },
+            handleAdd(){
+                axios.post('/book/',this.formData).then(res=>{
+                    const {code,msg} = res.data
+                    if (code === 20011){
+                        this.dialogFormVisible = false
+                        this.$message.success('添加成功')
+                    }else if(code === 20010){
+                        this.$message.error('添加失败')
+                    }else {
+                        this.$message.error(msg)
+                    }
+                    this.dialogFormVisible = false
+                }).finally(()=>{
+                    this.getAll()
+                })
+            },
+            handleUpdate(row){
+                const id = row.bookId;
+                axios.get(`/book/${id}`).then(res=>{
+                    const {data,code,msg} = res.data
+                    if (code === 20041){
+                        this.formData = data
+                        this.dialogFromVisible4Edit = true
+                    }else {
+                        this.$message.error(msg)
+                    }
+                })
+            },
+            //此处的finally会在then中方法为执行结束后调用..
+            handleEdit(){
+                axios.put(`/book`,this.formData).then(res=>{
+                    const {data,code,msg} = res.data
+                    if (code === 20031){
+                        this.dialogFromVisible4Edit = false
+                        this.$message.success('修改成功')
+                    }else if (code === 20030){
+                        this.$message.error('修改失败')
+                    }else {
+                        this.$message.error(msg)
+                    }
+                }).finally(()=>{
+                    this.getAll()
+                })
+            },
+            handleDelete(row){
+                this.$confirm('此操作永久删除当前数据，是否继续？','提示',{
+                    type:'info'
+                }).then(()=>{
+                    const id = row.bookId;
+                    axios.delete(`/book/${id}`).then(res=>{
+                        const {code,msg} = res.data
+                        if (code === 20021){
+                            this.$message.success('删除成功')
+                        }else if (code === 20020){
+                            this.$message.error('修改失败')
+                        }
+                    }).then(()=>{
+                        this.getAll()
+                    })
+                }).catch(()=>{
+                    this.$message.info('取消删除操作')
+                })
+            }
+        }
+    })
+</script>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>初始Vue</title>
+    <script src="../js/axios.min.js"></script>
+</head>
+
+<body>
+    <script>
+        //axios
+        const service = axios.create({
+            baseURL: 'http://localhost:8080', // api的base_url
+            timeout: 5000 // 请求超时时间
+        })
+
+        //拦截这个请求
+
+        const getToken = () =>{
+            //从store中取出token
+            return 'token'
+        }
+
+        //request调用请求前，将其配置的config交由拦截器进一步处理
+        //处理后的config作为真正的config，作为请求配置发起请求
+        /*
+        在请求拦截器中的第二个函数（请求失败时的回调函数）通常用于处理请求拦截器内部的错误情况，而不是实际的请求失败。
+        结合Promise加以理解，预执行的操作有resolve、reject两种情况
+        只不过对于拦截器而言一般都是resolve的执行
+         */
+        service.interceptors.request.use(
+            config => {
+                const token = getToken()
+                if (token) config.headers['X-Token'] = token
+                return config
+            },
+            error => {
+                return Promise.reject(error)
+            }
+        )
+
+        // response interceptor
+        service.interceptors.response.use(
+            response => {
+                const res = response.data
+
+                // if the custom code is not 20000, it is judged as an error.
+                if (res.code !== 20000) {
+
+                    // 50008: Illegal token; 50012: Other clients logged in; 50014: Token expired;
+                    if (res.code === 50008 || res.code === 50012 || res.code === 50014) {
+                        // to re-login
+                        alert('令牌过时，点击确认返回登录界面')
+                    }else {
+                        alert(res.message || 'Error')
+                    }
+                    const err = new Error(res.message || 'Error')
+                    return Promise.reject(err)
+                } else {
+                    return res
+                }
+            },
+            error => {
+                alert(error.message)
+                return Promise.reject(error)
+            }
+        )
+
+        const testRequest = () => {
+            service.request({
+                method:'get',
+                url:'/book/1',
+ /*               data:{
+                    username:'123',
+                    password:'321'
+                }*/
+            }).catch(err=>{
+                console.log('err msg:'+err.message)
+            })
+        }
+
+        testRequest()
+
+    </script>
+</body>
+</html>
