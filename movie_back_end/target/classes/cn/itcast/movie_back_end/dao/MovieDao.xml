@@ -13,10 +13,80 @@
             <result column="password" property="password" />
             &lt;!&ndash; 其他字段... &ndash;&gt;
         </resultMap>-->
-
     <!-- 根据用户ID查询用户 -->
-<!--    <select id="search" resultType="cn.itcast.movie_back_end.domain.pojo.Movie" parameterType="int">
-        SELECT * FROM movie m left join movie_sub_country msc on m.movie_id = msc.movie_id
-        left join movie_sub_type mst on m.movie_id = mst.movie_id
-    </select>-->
+
+    <select id="selectByTypeAndCountry" resultType="int">
+        select mst.movie_id
+        from movie_sub_type mst
+        left join movie m on m.movie_id = mst.movie_id
+        where mst.type_id = #{typeId}
+          and m.titleCN like CONCAT('%', #{name}, '%')
+          and EXISTS
+              (select movie_id
+               from movie_sub_country msc
+               where mst.movie_id = msc.movie_id
+                 and msc.country_id = #{countryId})
+                <if test="year > 2018">
+                    and m.release_time = #{year}
+                </if>
+                <if test="year &lt;= 2018 &amp; year != 0">
+                    and m.release_time &lt;= #{year}
+                </if>
+        order by m.movie_id
+        <if test="sort == '-id'">
+            desc
+        </if>
+    </select>
+    <select id="selectByType" resultType="int">
+        select mst.movie_id
+        from movie_sub_type mst
+        left join movie m on m.movie_id = mst.movie_id
+        where mst.type_id = #{typeId}
+        and m.titleCN like CONCAT('%', #{name}, '%')
+          <if test="year > 2018">
+            and m.release_time = #{year}
+          </if>
+          <if test="year &lt;= 2018 &amp; year != 0">
+            and m.release_time &lt;= #{year}
+          </if>
+        order by m.movie_id
+        <if test="sort == '-id'">
+            desc
+        </if>
+    </select>
+
+    <select id="selectByCountry" resultType="int">
+        select msc.movie_id
+        from movie_sub_country msc
+        left join movie m on m.movie_id = msc.movie_id
+        where msc.country_id = #{countryId}
+        and m.titleCN like CONCAT('%', #{name}, '%')
+        <if test="year > 2018">
+            and m.release_time = #{year}
+        </if>
+        <if test="year &lt;= 2018 &amp; year != 0">
+            and m.release_time &lt;= #{year}
+        </if>
+        order by m.movie_id
+        <if test="sort == '-id'">
+            desc
+        </if>
+    </select>
+
+    <select id="selectByYear" resultType="int">
+        select m.movie_id
+        from movie m
+        where m.titleCN like CONCAT('%', #{name}, '%')
+        <if test="year > 2018">
+            and m.release_time = #{year}
+        </if>
+        <if test="year &lt;= 2018 &amp; year != 0">
+            and m.release_time &lt;= #{year}
+        </if>
+        order by m.movie_id
+        <if test="sort == '-id'">
+            desc
+        </if>
+    </select>
+
 </mapper>

@@ -15,5 +15,6 @@ public class User {
     Integer userId;
     String userName;
     String passWord;
+    String phone;
     String role;
 }

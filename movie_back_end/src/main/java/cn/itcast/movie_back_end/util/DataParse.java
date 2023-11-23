@@ -26,10 +26,10 @@ public class DataParse {
         }
         return tagList;
     }
-    public static String yearById(int yearId){
+    public static int yearById(int yearId){
         //before 2018
-        String[] arr = new String[]{"all","2023","2022","2021","2020","2019","before"};
-        if (yearId>0 && yearId<6) return arr[yearId];
-        return null;
+        int[] arr = new int[]{0,2023,2022,2021,2020,2019,2018};
+        if (yearId>0 && yearId<=6) return arr[yearId];
+        return 0;
     }
 }

@@ -8,8 +8,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AdminInfo {
-    String[] roles;
+public class CommonInfo {
+    String role;
     String introduction;
     String avatar;
     String name;

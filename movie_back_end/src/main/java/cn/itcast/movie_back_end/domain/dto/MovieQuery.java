@@ -14,5 +14,6 @@ public class MovieQuery {
     int countryId;
     int typeId;
     int yearId;
-    int sortId;
+    String sort;
+    String name;
 }

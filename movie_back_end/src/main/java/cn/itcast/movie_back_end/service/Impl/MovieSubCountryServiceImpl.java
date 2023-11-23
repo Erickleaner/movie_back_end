@@ -9,7 +9,9 @@ import cn.itcast.movie_back_end.domain.pojo.MovieSubCountry;
 import cn.itcast.movie_back_end.domain.pojo.MovieSubType;
 import cn.itcast.movie_back_end.domain.pojo.Type;
 import cn.itcast.movie_back_end.service.MovieSubCountryService;
+import cn.itcast.movie_back_end.service.MovieSubTypeService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class MovieSubCountryServiceImpl implements MovieSubCountryService {
+public class MovieSubCountryServiceImpl extends ServiceImpl<MovieSubCountryDao, MovieSubCountry>
+        implements MovieSubCountryService {
 
 
     @Autowired

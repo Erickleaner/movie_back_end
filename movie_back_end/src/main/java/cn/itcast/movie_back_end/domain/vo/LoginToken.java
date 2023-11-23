@@ -12,5 +12,5 @@ import java.util.List;
 public class LoginToken {
     boolean isValid;
     String token;
-    List<String> roles;
+    String role;
 }

@@ -54,21 +54,11 @@ public class MovieController {
     @AuthAccess
     @PostMapping ("/list")
     public Result getAll(@RequestBody MovieQuery movieQuery){
-        int page = movieQuery.getPage();
-        int limit = movieQuery.getLimit();
-
-        PageGP pageGP = new PageGP();
-        IPage<Movie> iPage = new Page<>(page,limit);
-
-        LambdaQueryWrapper<Movie> qw = new LambdaQueryWrapper<>();
-        qw.orderByAsc(Movie::getMovieId);
-
-        movieDao.selectPage(iPage,qw);
-        List<Movie> movieList = iPage.getRecords();
-        List<MovieVo> movieVoList = makeMovieVoList(movieList);
-        pageGP.setItems(movieVoList);
-        pageGP.setTotal(iPage.getTotal());
+        movieQuery.setSort("+id");
+        movieQuery.setName("");
+        PageGP<MovieVo> pageGP = movieService.searchByTags(movieQuery);
         return new Result(Code.REQUEST_OK,pageGP);
+
     }
 
     @AuthAccess
@@ -84,31 +74,6 @@ public class MovieController {
         return new Result(Code.REQUEST_OK,checkGroups);
     }
 
-    public List<MovieVo> makeMovieVoList(List<Movie> movieList){
-        List<MovieVo> movieVoList = new ArrayList<>();
-        for (Movie movie:movieList){
-            int movieId = movie.getMovieId();
-            String link = movie.getLink();
-            String imgSrc = movie.getImgSrc();
-            Float rating = movie.getRating();
-            int judgeNum = movie.getJudgeNum();
-            String inq = movie.getInq();
-            String titleCN = movie.getTitleCN();
-            String titleEN = movie.getTitleEN();
-            String director = movie.getDirector();
-            String actor = movie.getActor();
-            String releaseTime = movie.getReleaseTime();
-
-            List<Country> countries = movieSubCountryService.getCountriesByMovieId(movieId);
-            List<Type> types = movieSubTypeService.getTypesByMovieId(movieId);
-
-
-            MovieVo movieVo = new MovieVo(movieId,link,imgSrc,rating,judgeNum,inq,titleCN,
-                    titleEN,director,actor,releaseTime,countries,types);
-            movieVoList.add(movieVo);
-        }
-        return movieVoList;
-    }
     @PutMapping
     public Result update(@RequestBody Movie movie){
         boolean flag = movieDao.updateById(movie) == 1;

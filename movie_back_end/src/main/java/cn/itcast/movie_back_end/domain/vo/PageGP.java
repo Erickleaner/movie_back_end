@@ -9,9 +9,9 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PageGP {
+public class PageGP<T> {
 
-    List<MovieVo> items;
+    List<T> items;
     long total;
 
 }
